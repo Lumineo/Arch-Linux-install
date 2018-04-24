@@ -1,0 +1,72 @@
+--------[Internet connection]--------
+dhcpcd or wifi-menu	- connectiong to a internet
+ping -c 3 google.com	- check if there is a internet connection
+--------[Partitioning Disk]--------
+fdisk or cfdisk /dev/sda
+--------------------------
+partition - dos
+boot - 200M
+swap - x
+root - 25GB minimal
+user - the rest
+--------------------------
+mkfs.ext4 /dev/sda1	- ext4 fs on boot partition
+mkswap /dev/sda2	- making swap partition to swap
+swapon /dev/sda2	- enable swap on swap partition
+mkfs.ext4 /dev/sda3	- ext4 fs on root partition
+mkfs.ext4 /dev/sda4	- ext4 fs on user partition
+mkdir /mnt/home		- Creating a home dir
+mkdir /mnt/boot		- Creating a boot dir
+mount /dev/sda1		- mount boot partition to /mnt/boot dir
+mount /dev/sda3		- mount root partition to /mnt dir
+miunt /dev/sda4		- mount user partition to /mnt/home dir
+--------[Choose closest mirror list]--------
+pacman -Sy		- Update?
+pacman -S reflector
+reflector --verbose -l 5 --sort rate --save /etc/pacman.d/mirrorlist
+--------[Install Arch Linux base package]--------
+
+pacstrap -i /mnt base base-devel ttf-dejavu ttf-inconsolata rxvt-unicode rxvt-unicode-terminfo i3 dmenu xorg xorg-xinit arandr alsa-firmware 
+alsa-utils alsa-plugins pulseaudio-alsa pulseaudio ntfs-3g libreoffice zathura zathura-pdf-poppler
+
+--------[Configure Fstab and chroot /mnt]--------
+genfstab -U -p /mnt >> /mnt/etc/fstab
+cat /mnt/etc/fstab
+arch-chroot /mnt
+--------[Configure language and location]--------
+nano /etc/locale.get
+Remove # on en_US.UTF-8 UTF-8 & en_US ISO-8859-1
+locale-gen
+echo LANG=en_US.UTF-8 > /etc/locale.conf
+export LANG=en_US.UTF-8
+--------[Set time zone]--------
+ln -s /usr/share/zoneinfo/Europe/Tallinn > /etc/localtime
+hwclock --systohc --utc
+--------[Configure repository]--------
+nano /etc/pacman.conf
+Remove # on [multilib] and Include = /etc/pacman.d/mirrorlist
+pacman -Sy
+--------[Set Hostname and Network]--------
+echo yourhostname > /etc/hostname
+--------[Give Root Password And Create New User]
+passwd
+pacman -S sudo bash-completion dialog wpa_supplicant
+useradd -m -g users -G wheel,storage,power -s /bin/bash yourusername
+EDITOR=nano visudo
+Remove # from %wheel ALL=(ALL)ALL
+--------[Install and configure boot loader]--------
+mkinitcpio -p linux
+pacman -S grub os-prober
+grub-install --targer=i386-pc --recheck /dev/sda
+grub-mkconfig -o /boot/grub/grub.cfg
+--------[Unmount the partitions and reboot]--------
+exit
+umount -R /mnt
+reboot
+
+
+--------[autostart i3]--------
+# autostart systemd default session on tty1
+if [[ "$(tty)" == '/dev/tty1' ]]; then
+    exec startx
+fi
