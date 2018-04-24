@@ -19,7 +19,7 @@ mkdir /mnt/home		- Creating a home dir
 mkdir /mnt/boot		- Creating a boot dir
 mount /dev/sda1		- mount boot partition to /mnt/boot dir
 mount /dev/sda3		- mount root partition to /mnt dir
-miunt /dev/sda4		- mount user partition to /mnt/home dir
+mount /dev/sda4		- mount user partition to /mnt/home dir
 --------[Choose closest mirror list]--------
 pacman -Sy		- Update?
 pacman -S reflector
